@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mv:beans xmlns:mv="http://www.example.org/haohj" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.example.org/haohj  ./base/xml/minimvc.xsd ">
+    <mv:scan-package>com.hao</mv:scan-package>
+    <mv:view>
+        <mv:content-type>mv:content-type</mv:content-type>
+        <mv:prefix>mv:prefix</mv:prefix>
+        <mv:suffix>mv:suffix</mv:suffix>
+    </mv:view>
+</mv:beans>
