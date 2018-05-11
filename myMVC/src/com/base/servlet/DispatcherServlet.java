@@ -54,4 +54,25 @@ public class DispatcherServlet {
             return false;
         }
     }
+
+    public void saveClass() throws Exception {
+        if (packageNames.isEmpty()) {
+            return;
+        }
+
+        for (String pkn : packageNames) {
+            //根据类的全限定名通过反射获取指定类的class对象
+
+            //判断该类是否有controller注解
+            //实例化该class的类对象
+            //获取controller注解的对象
+            //获取该注解的参数的值
+            //判断注解的值是否为空
+            //获取该类的类名首字母小写作为值。
+
+
+            //判断该对象是否有service注解
+            //将类的名称和类的实例放到map对象中
+        }
+    }
 }
