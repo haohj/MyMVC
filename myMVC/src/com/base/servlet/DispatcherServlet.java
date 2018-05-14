@@ -184,8 +184,13 @@ public class DispatcherServlet {
                         //获取包名
                         String packString = field.getType().getPackage().getName();
                         //获取实现类的类名
+                        String className = field.getType().getSimpleName()+"Impl";
                         //反射该类对象
+                        Class<?> obj = Class.forName(packString+".impl."+className);
                         //判断该类是否有controller注解
+                        if(obj.isAnnotationPresent(Controller.class)){
+
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
