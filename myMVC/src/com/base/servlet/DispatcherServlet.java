@@ -1,5 +1,6 @@
 package com.base.servlet;
 
+import com.base.annotation.Autowired;
 import com.base.annotation.Controller;
 import com.base.annotation.RequestMapping;
 import com.base.annotation.Service;
@@ -20,18 +21,18 @@ public class DispatcherServlet {
     private Map<String, Object> methodMap = new HashMap<String, Object>();
 
     /**
-     *
      * @param packageName xml中配置的扫描的包名路径
      * @return packageName 返回将路径中的.替换为/的包名路径
-     * */
+     */
     public String replacePackageName(String packageName) {
         return packageName.replaceAll("\\.", "/");
     }
 
     /**
      * 扫描xml中配置的包下的所有文件，并将class文件和对应的包名保存到packageNames中
+     *
      * @param packageName xml中配置的扫描的包名路径
-     * */
+     */
     public void scanPackage(String packageName) {
         //替换包名中的 .
         String packageName1 = replacePackageName(packageName);
@@ -62,9 +63,10 @@ public class DispatcherServlet {
 
     /**
      * 判断文件是否是class文件
+     *
      * @param name 文件名
      * @return boolean 是否是class文件
-     * */
+     */
     private boolean isClassFile(String name) {
         if (name == null || name.length() <= 0) {
             return false;
@@ -80,7 +82,7 @@ public class DispatcherServlet {
 
     /**
      * 通过包名和文件名，反射出有controller和service注解的类的实例
-     * */
+     */
     public void saveClass() throws Exception {
         if (packageNames.isEmpty()) {
             return;
@@ -120,7 +122,7 @@ public class DispatcherServlet {
 
     /**
      * 根据所有的类对象获取方法
-     * */
+     */
     public void handlerMap() {
         //判断类的集合是否为空
         if (classMap.size() <= 0) {
@@ -171,8 +173,25 @@ public class DispatcherServlet {
         for (Map.Entry<String, Object> entry : classMap.entrySet()) {
             //获取本类下面所有的成员变量
             Field[] fields = entry.getValue().getClass().getDeclaredFields();
-            //设置该成员变量可以编辑
-            //判断该成员对象是否有Autowired注解
+            for (Field field : fields) {
+                //设置该成员变量可以访问
+                field.setAccessible(true);
+                //判断该成员对象是否有Autowired注解
+                if (field.isAnnotationPresent(Autowired.class)) {
+                    try {
+                        //设置该成员变量可以编辑
+                        field.setAccessible(true);
+                        //获取包名
+                        String packString = field.getType().getPackage().getName();
+                        //获取实现类的类名
+                        //反射该类对象
+                        //判断该类是否有controller注解
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
         }
     }
 }
