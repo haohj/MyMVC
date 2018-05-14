@@ -184,13 +184,24 @@ public class DispatcherServlet {
                         //获取包名
                         String packString = field.getType().getPackage().getName();
                         //获取实现类的类名
-                        String className = field.getType().getSimpleName()+"Impl";
+                        String className = field.getType().getSimpleName() + "Impl";
                         //反射该类对象
-                        Class<?> obj = Class.forName(packString+".impl."+className);
+                        Class<?> obj = Class.forName(packString + ".impl." + className);
+                        String value = "";
                         //判断该类是否有controller注解
-                        if(obj.isAnnotationPresent(Controller.class)){
-
+                        if (obj.isAnnotationPresent(Controller.class)) {
+                            value = obj.getAnnotation(Controller.class).value();
+                            if (value.equals("")) {
+                                value = obj.getSimpleName().substring(0, 1).toLowerCase() + obj.getSimpleName().substring(1);
+                            }
+                        } else if (obj.isAnnotationPresent(Service.class)) {
+                            value = obj.getAnnotation(Service.class).value();
+                            if (value.equals("")) {
+                                value = obj.getSimpleName().substring(0, 1).toLowerCase() + obj.getSimpleName().substring(1);
+                            }
                         }
+                        //给成员变量赋值实例
+                        field.set(entry.getValue(), classMap.get(value));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
