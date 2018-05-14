@@ -5,6 +5,7 @@ import com.base.annotation.RequestMapping;
 import com.base.annotation.Service;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
@@ -16,12 +17,21 @@ public class DispatcherServlet {
 
     private List<String> packageNames = new ArrayList<String>();
     private Map<String, Object> classMap = new HashMap<String, Object>();
-    private Map<String,Object> methodMap = new HashMap<String, Object>();
+    private Map<String, Object> methodMap = new HashMap<String, Object>();
 
+    /**
+     *
+     * @param packageName xml中配置的扫描的包名路径
+     * @return packageName 返回将路径中的.替换为/的包名路径
+     * */
     public String replacePackageName(String packageName) {
         return packageName.replaceAll("\\.", "/");
     }
 
+    /**
+     * 扫描xml中配置的包下的所有文件，并将class文件和对应的包名保存到packageNames中
+     * @param packageName xml中配置的扫描的包名路径
+     * */
     public void scanPackage(String packageName) {
         //替换包名中的 .
         String packageName1 = replacePackageName(packageName);
@@ -50,6 +60,11 @@ public class DispatcherServlet {
         }
     }
 
+    /**
+     * 判断文件是否是class文件
+     * @param name 文件名
+     * @return boolean 是否是class文件
+     * */
     private boolean isClassFile(String name) {
         if (name == null || name.length() <= 0) {
             return false;
@@ -63,6 +78,9 @@ public class DispatcherServlet {
         }
     }
 
+    /**
+     * 通过包名和文件名，反射出有controller和service注解的类的实例
+     * */
     public void saveClass() throws Exception {
         if (packageNames.isEmpty()) {
             return;
@@ -100,6 +118,9 @@ public class DispatcherServlet {
         }
     }
 
+    /**
+     * 根据所有的类对象获取方法
+     * */
     public void handlerMap() {
         //判断类的集合是否为空
         if (classMap.size() <= 0) {
@@ -133,20 +154,25 @@ public class DispatcherServlet {
                         }
                         //将controller的名称和方法的名称保存到集合中
                         methodMap.put("/" + value + rv, method);
-                    }else {
+                    } else {
                         continue;
                     }
                 }
-            }else {
+            } else {
                 continue;
             }
         }
     }
 
-    public void ioc(){
+    public void ioc() {
         if (classMap.size() <= 0) {
             return;
         }
-
+        for (Map.Entry<String, Object> entry : classMap.entrySet()) {
+            //获取本类下面所有的成员变量
+            Field[] fields = entry.getValue().getClass().getDeclaredFields();
+            //设置该成员变量可以编辑
+            //判断该成员对象是否有Autowired注解
+        }
     }
 }
