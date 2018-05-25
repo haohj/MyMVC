@@ -1,4 +1,5 @@
 package com.hao.service.customer;
 
-public class CustomerServiceI {
+public interface CustomerServiceI {
+    public void sayHello() ;
 }
