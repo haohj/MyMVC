@@ -4,9 +4,17 @@ import com.base.annotation.Autowired;
 import com.base.annotation.Controller;
 import com.base.annotation.RequestMapping;
 import com.base.annotation.Service;
+import com.base.xml.XmlParse;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
@@ -14,11 +22,71 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DispatcherServlet {
+public class DispatcherServlet extends HttpServlet {
 
-    private List<String> packageNames = new ArrayList<String>();
+    private static final long serialVersionUID = 1L;
+    private List<String> packageNames = new ArrayList<>();
     private Map<String, Object> classMap = new HashMap<String, Object>();
     private Map<String, Object> methodMap = new HashMap<String, Object>();
+
+    public DispatcherServlet() {
+        super();
+    }
+
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        //获取配置文件
+        XmlParse xmlParse = new XmlParse();
+        Map<String, Object> configs = xmlParse.getConfig(config.getInitParameter("configxml"));
+        //扫描包
+        scanPackage(configs.get("scanPackage").toString());
+        try {
+            //实例化对象
+            saveClass();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //反射方法
+        handlerMap();
+        //依赖注入
+        ioc();
+    }
+
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doPost(request, response);
+    }
+
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //获取URL
+        String reuestUrl = request.getRequestURI();
+        String pName = request.getContextPath();
+        //获取方法路径
+        String realUrl = reuestUrl.replaceAll(pName, "");
+        //获取controller方法名称
+        String cName = (realUrl.split("/")[1]);
+        //实例化方法
+        Method method = (Method) methodMap.get(realUrl);
+        //实例化controller
+        Object controller = classMap.get(cName);
+        try {
+            //调用方法
+            method.invoke(controller, new Object[]{request, response});
+        } catch (IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
     /**
      * @param packageName xml中配置的扫描的包名路径
@@ -166,6 +234,9 @@ public class DispatcherServlet {
         }
     }
 
+    /**
+     * 实例化类中的有Autowired注解的成员变量
+     */
     public void ioc() {
         if (classMap.size() <= 0) {
             return;
@@ -209,5 +280,20 @@ public class DispatcherServlet {
 
             }
         }
+    }
+
+    private String getFileExtendName(String fileName) {
+        //判断传入的文件名是否为空，或者长度是否小于等于0
+        if (fileName == null || fileName.length() <= 0) {
+            return null;
+        }
+        //获取文件中最后一个 . 出现的地方的下标
+        int lastIndex = fileName.lastIndexOf(".");
+        //判断下标是否为正常的值
+        if (lastIndex > -1 && lastIndex < (fileName.length() - 1)) {
+            //截取文件的扩展名
+            return fileName.substring(lastIndex + 1);
+        }
+        return fileName;
     }
 }
